@@ -1,0 +1,15 @@
+{
+  "name": "ai-law-frontend",
+  "version": "1.0.0",
+  "description": "Frontend and E2E testing for AI & Law Hub",
+  "scripts": {
+    "test": "jest",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "playwright": "^1.40.0",
+    "mocha": "^10.0.0",
+    "cypress": "^13.0.0"
+  }
+} 

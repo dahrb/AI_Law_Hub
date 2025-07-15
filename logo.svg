@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="340" height="44" viewBox="0 0 340 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="hubGrad" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10b981"/>
+      <stop offset="0.5" stop-color="#059669"/>
+      <stop offset="1" stop-color="#047857"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="22" cy="22" r="20" fill="url(#hubGrad)"/>
+  
+  <!-- Hub center -->
+  <circle cx="22" cy="22" r="6" fill="#fff" opacity="0.9"/>
+  
+  <!-- Connection lines (hub concept) -->
+  <line x1="22" y1="8" x2="22" y2="16" stroke="#fff" stroke-width="2" opacity="0.8"/>
+  <line x1="22" y1="28" x2="22" y2="36" stroke="#fff" stroke-width="2" opacity="0.8"/>
+  <line x1="8" y1="22" x2="16" y2="22" stroke="#fff" stroke-width="2" opacity="0.8"/>
+  <line x1="28" y1="22" x2="36" y2="22" stroke="#fff" stroke-width="2" opacity="0.8"/>
+  
+  <!-- Diagonal connections -->
+  <line x1="12" y1="12" x2="18" y2="18" stroke="#fff" stroke-width="1.5" opacity="0.6"/>
+  <line x1="32" y1="12" x2="26" y2="18" stroke="#fff" stroke-width="1.5" opacity="0.6"/>
+  <line x1="12" y1="32" x2="18" y2="26" stroke="#fff" stroke-width="1.5" opacity="0.6"/>
+  <line x1="32" y1="32" x2="26" y2="26" stroke="#fff" stroke-width="1.5" opacity="0.6"/>
+  
+  <!-- Connection nodes -->
+  <circle cx="22" cy="8" r="2" fill="#fff"/>
+  <circle cx="22" cy="36" r="2" fill="#fff"/>
+  <circle cx="8" cy="22" r="2" fill="#fff"/>
+  <circle cx="36" cy="22" r="2" fill="#fff"/>
+  <circle cx="12" cy="12" r="1.5" fill="#fff" opacity="0.8"/>
+  <circle cx="32" cy="12" r="1.5" fill="#fff" opacity="0.8"/>
+  <circle cx="12" cy="32" r="1.5" fill="#fff" opacity="0.8"/>
+  <circle cx="32" cy="32" r="1.5" fill="#fff" opacity="0.8"/>
+  
+  <!-- AI & Law Hub Text -->
+  <text x="54" y="29" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" fill="#333">AI &amp; Law Hub</text>
+</svg> 

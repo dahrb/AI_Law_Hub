@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>AI & Law Hub</title>
+    <link rel="stylesheet" href="styles.css?v=6.2">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Modern Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="logo.svg" alt="AI & Law Hub" class="logo">
+                    <span class="logo-text">AI & Law Hub</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-nav">
+                <a href="#learn" class="nav-item active" data-section="history">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Learn</span>
+                </a>
+                <a href="#research" class="nav-item" data-section="research">
+                    <i class="fas fa-microscope"></i>
+                    <span>Research</span>
+                </a>
+                <a href="#leaderboard" class="nav-item" data-section="leaderboard">
+                    <i class="fas fa-trophy"></i>
+                    <span>Leaderboard</span>
+                </a>
+                <a href="#achievements" class="nav-item" data-section="achievements">
+                    <i class="fas fa-medal"></i>
+                    <span>Achievements</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-section" id="userSection">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-details">
+                            <span class="username" id="username">Guest</span>
+                            <span class="user-status" id="userStatus">Not signed in</span>
+                        </div>
+                    </div>
+                    <button class="auth-btn" id="authButton">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header Bar -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 class="page-title" id="pageTitle">Learn</h1>
+                    <p class="page-subtitle" id="pageSubtitle">Choose a topic to start learning</p>
+                </div>
+                <div class="header-right">
+                    <!-- New minimalist global progress bar -->
+                    <div class="global-progress-bar" id="globalProgressBar">
+                        <div class="global-progress-fill" id="globalProgressFill"></div>
+                        <span class="global-progress-percent" id="globalProgressPercent">0%</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Sections -->
+            <div class="content-wrapper">
+                <!-- Learn Section -->
+                <section class="content-section active" id="historySection">
+                    <!-- General Topics Section (for non-history modules) -->
+                    <div class="topics-container" id="topicsSection">
+                        <div class="topics-grid" id="topicsGrid">
+                            <!-- Topics will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- General Lesson Section (for non-history modules) -->
+                    <div class="lesson-container hidden" id="lessonSection">
+                        <div class="lesson-header">
+                            <button class="back-btn" id="backBtn">
+                                <i class="fas fa-arrow-left"></i>
+                                <span>Back to Topics</span>
+                            </button>
+                            <div class="lesson-meta">
+                                <h2 id="lessonTitle">Lesson Title</h2>
+                                <div class="lesson-progress">
+                                    <span id="currentQuestion">1</span> of <span id="totalQuestions">5</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-content" id="lessonContent">
+                            <!-- Questions will be populated by JavaScript -->
+                        </div>
+                        
+                        <div class="lesson-navigation">
+                            <button class="nav-btn secondary" id="prevBtn" disabled>
+                                <i class="fas fa-arrow-left"></i>
+                                <span>Previous</span>
+                            </button>
+                            <button class="nav-btn primary" id="nextBtn">
+                                <span>Next</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- General Results Section (for non-history modules) -->
+                <div id="resultsSection" class="content-section hidden">
+                    <div class="results-card">
+                        <h2 id="resultsTitle" class="results-title"></h2>
+                        <div id="resultsSubtitle" class="results-subtitle"></div>
+                        <div class="results-score-row">
+                            <div class="score-circle-lg" id="scoreCircle">
+                                <span id="scorePercentage">0%</span>
+                            </div>
+                            <div class="results-details">
+                                <div class="results-correct">
+                                    <span id="correctAnswers">0</span> / <span id="totalAnswers">0</span> correct
+                                </div>
+                                <div id="resultsPoints" class="results-points-badge"></div>
+                            </div>
+                        </div>
+                        <div id="resultsExtras"></div>
+                        <div class="results-actions">
+                            <button class="action-btn secondary" id="retryBtn">
+                                <i class="fas fa-redo"></i>
+                                <span>Retry</span>
+                            </button>
+                            <button class="action-btn primary" id="nextLessonBtn">
+                                <span>Next Lesson</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                            <button class="action-btn secondary" id="backToTopicsBtn">
+                                <i class="fas fa-home"></i>
+                                <span>Topics</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Research Section -->
+                <section class="content-section" id="researchSection">
+                    <div class="section-stats" id="papersCount">0 papers</div>
+                    
+                    <div class="section-filters research-filters">
+                        <button id="toggleKeyPapers" class="btn key-papers-btn" aria-pressed="false" style="margin-right: 1em;"><span class="star-icon">☆</span> Key Papers</button>
+                        <div id="keyPapersDropdown" class="key-papers-dropdown" style="display:none;"></div>
+                        <div class="filter-group">
+                            <div class="filter-tabs">
+                                <button class="filter-tab active" data-filter="all">All</button>
+                                <button class="filter-tab" data-filter="ICAIL">ICAIL</button>
+                                <button class="filter-tab" data-filter="JURIX">JURIX</button>
+                            </div>
+                            <select id="yearFilter" class="select-input">
+                                <option value="">All Years</option>
+                            </select>
+                            <select id="sortDropdown" class="sort-dropdown">
+                                <option value="date">Newest First</option>
+                                <option value="citations">Most Cited</option>
+                                <option value="title">Alphabetical</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="keyPapersSection" class="key-papers-section hidden"></div>
+                    
+                    <div class="papers-container" id="papersContainer">
+                        <div class="papers-list" id="papersList">
+                            <!-- Papers will be populated by JavaScript -->
+                        </div>
+                        <div class="loading-spinner hidden" id="papersLoading">
+                            <div class="spinner"></div>
+                            <span>Loading papers...</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Leaderboard Section -->
+                <section class="content-section" id="leaderboardSection">
+                    <div class="leaderboard-content" id="leaderboardContent">
+                        <div class="user-rank-card">
+                            <h3>Your Rank</h3>
+                            <div class="rank-number" id="userRank">-</div>
+                        </div>
+                        <div class="leaderboard-list" id="leaderboardList">
+                            <!-- Leaderboard entries will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Achievements Section -->
+                <section class="content-section" id="achievementsSection">
+                    <div class="achievements-content" id="achievementsContent">
+                        <div class="achievements-summary">
+                            <div class="summary-stats">
+                                <div class="stat">
+                                    <span class="stat-value" id="earnedAchievements">0</span>
+                                    <span class="stat-label">Earned</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value" id="totalAchievements">10</span>
+                                    <span class="stat-label">Total</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value" id="totalPointsEarned">0</span>
+                                    <span class="stat-label">Points</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="achievements-grid" id="achievementsGrid">
+                            <!-- Achievements will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Authentication Modal -->
+        <div class="modal" id="authModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Welcome to AI & Law Hub</h2>
+                    <button class="close-btn" id="closeAuthModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" id="loginTab">Login</button>
+                        <button class="auth-tab" id="registerTab">Register</button>
+                    </div>
+                    
+                    <form id="loginForm" class="auth-form">
+                        <div class="form-group">
+                            <label for="loginUsername">Username</label>
+                            <input type="text" id="loginUsername" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" required autocomplete="current-password">
+                        </div>
+                        <button type="submit" class="btn primary">Login</button>
+                    </form>
+                    
+                    <form id="registerForm" class="auth-form hidden">
+                        <div class="form-group">
+                            <label for="registerUsername">Username</label>
+                            <input type="text" id="registerUsername" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerEmail">Email</label>
+                            <input type="email" id="registerEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPassword">Password</label>
+                            <input type="password" id="registerPassword" required autocomplete="new-password">
+                        </div>
+                        <button type="submit" class="btn primary">Register</button>
+                    </form>
+                    
+                    <div class="auth-footer">
+                        <button class="btn secondary" id="continueAsGuest">Continue as Guest</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Popup -->
+        <div class="message-popup hidden" id="messagePopup">
+            <div class="message-content">
+                <span id="messageText"></span>
+                <button class="close-btn" id="closeMessage">&times;</button>
+            </div>
+        </div>
+
+        <!-- Achievement Notification -->
+        <div class="achievement-notification hidden" id="achievementNotification">
+            <div class="achievement-content">
+                <div class="achievement-icon">
+                    <i class="fas fa-medal"></i>
+                </div>
+                <div class="achievement-info">
+                    <h3 id="achievementTitle">Achievement Unlocked!</h3>
+                    <p id="achievementDescription">You've earned a new badge!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Points Notification -->
+        <div class="points-notification hidden" id="pointsNotification">
+            <div class="points-content">
+                <div class="points-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="points-info">
+                    <h3>Points Earned!</h3>
+                    <p id="pointsText">+15 points</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js" type="module"></script>
+</body>
+</html> 

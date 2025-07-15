@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear LocalStorage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success {
+            color: #22c55e;
+            font-weight: bold;
+        }
+        .info {
+            color: #3b82f6;
+            margin: 20px 0;
+        }
+        button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #dc2626;
+        }
+        .log {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Clear LocalStorage</h1>
+        <p class="info">This page will clear all localStorage data for the AI Law Learning app.</p>
+        
+        <button onclick="clearLocalStorage()">Clear All LocalStorage Data</button>
+        
+        <div id="log" class="log"></div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.textContent += message + '\n';
+        }
+
+        function clearLocalStorage() {
+            log('Starting localStorage cleanup...');
+            
+            // Get all localStorage keys
+            const keys = Object.keys(localStorage);
+            log(`Found ${keys.length} localStorage items:`);
+            
+            // List all keys
+            keys.forEach(key => {
+                log(`  - ${key}`);
+            });
+            
+            // Clear all localStorage
+            localStorage.clear();
+            
+            log('\n✅ All localStorage data cleared successfully!');
+            
+            // Show result
+            document.getElementById('result').innerHTML = `
+                <div class="success">
+                    <h3>🎉 Cleanup Complete!</h3>
+                    <p>All localStorage data has been cleared. You can now:</p>
+                    <ul>
+                        <li>Return to the main app</li>
+                        <li>Start fresh as a guest user</li>
+                        <li>Log in with existing accounts (progress will be reset)</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Auto-run on page load
+        window.onload = function() {
+            log('Page loaded. Click the button above to clear localStorage.');
+        };
+    </script>
+</body>
+</html> 
