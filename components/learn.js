@@ -1048,7 +1048,6 @@ export class LearnComponent {
                 firstIncomplete = i;
                 break;
             }
-            // If all are complete, will default to 0
             if (i === topicLessons - 1 && completedSet.has(i)) {
                 firstIncomplete = 0;
             }
@@ -1057,6 +1056,7 @@ export class LearnComponent {
         this.currentQuestion = 0;
         this.userAnswers = [];
         this.fieldNotesVisible = false; // Reset field notes visibility for new lesson
+        this.currentLessonData = null; // Always reset so new lesson is generated
         this.showLesson();
     }
 

@@ -3,7 +3,6 @@ import { HeaderComponent } from './components/header.js';
 import { LearnComponent } from './components/learn.js';
 import { ResearchComponent } from './components/research.js';
 import { LeaderboardComponent } from './components/leaderboard.js';
-import { AchievementsComponent } from './components/achievements.js';
 import { AcademicAdventureComponent } from './components/timeline.js';
 
 const API_BASE_URL = 'http://localhost:5004/api';
@@ -13,7 +12,6 @@ const header = new HeaderComponent();
 const learn = new LearnComponent(appState);
 const research = new ResearchComponent(API_BASE_URL);
 const leaderboard = new LeaderboardComponent(API_BASE_URL);
-const achievements = new AchievementsComponent(API_BASE_URL);
 const timeline = new AcademicAdventureComponent();
 
 const sectionMap = {
@@ -21,7 +19,7 @@ const sectionMap = {
     research: research,
     timeline: timeline,
     leaderboard: leaderboard,
-    achievements: achievements
+    achievements: null // Removed achievements section
 };
 
 function switchSection(section) {
@@ -239,7 +237,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Init other components
     if (typeof research !== 'undefined' && research && typeof research.init === 'function') research.init();
     if (typeof leaderboard !== 'undefined' && leaderboard && typeof leaderboard.init === 'function') leaderboard.init();
-    if (typeof achievements !== 'undefined' && achievements && typeof achievements.init === 'function') achievements.init();
     if (typeof SidebarComponent !== 'undefined') {
         const sidebar = new SidebarComponent(switchSection);
         sidebar.init();
@@ -453,15 +450,18 @@ async function handleLogin(userId) {
     if (userStatusElement) userStatusElement.textContent = 'Signed in';
     // Update button icon and event
     setupAuthButtonListener();
-    // 3. Fetch backend progress, points, achievements, and update UI
+    // --- Clear in-memory guest progress before loading backend progress ---
+    if (window.app.learn) {
+        window.app.learn.completedLessonsMap = {};
+        window.app.learn.completedLessons = 0;
+    }
+    // 3. Fetch backend progress, points, and update UI
     await fetchAndApplyUserProgress();
+    // Always re-render the UI to show only backend progress
+    if (window.app.learn && typeof window.app.learn.show === 'function') {
+        window.app.learn.show();
+    }
     await updatePointsDisplay();
-    if (achievements && typeof achievements.checkForNewAchievements === 'function') {
-        achievements.checkForNewAchievements();
-    }
-    if (window.app.learn && typeof window.app.learn.refreshProgress === 'function') {
-        window.app.learn.refreshProgress();
-    }
     // Always update global progress bar after login
     showMessage('Login successful!', 'success');
     updateGlobalProgress();
@@ -601,15 +601,9 @@ window.completeLesson = async function(topicId, lessonIdx, correctAnswers, total
             if (data.points_earned) {
                 showLessonResultsExtras(data.points_earned, []); // Pass empty array for achievements
             }
-            if (data.new_achievements && data.new_achievements.length > 0) {
-                showLessonResultsExtras([], data.new_achievements);
-            }
             // Refresh UI from backend
             await fetchAndApplyUserProgress();
             await updatePointsDisplay();
-            if (achievements && typeof achievements.checkForNewAchievements === 'function') {
-                achievements.checkForNewAchievements();
-            }
             if (window.app.learn && typeof window.app.learn.refreshProgress === 'function') window.app.learn.refreshProgress();
             // Always update global progress bar after lesson completion
             // if (typeof window.updateGlobalProgressBar === 'function') window.updateGlobalProgressBar(); // This line is removed
@@ -652,7 +646,7 @@ window.app = {
     calculateLessonPoints,
     checkModuleCompletion,
     POINTS_CONFIG,
-    achievements
+    // Removed achievements
 };
 
 function awardPoints(userId, points, reason) {

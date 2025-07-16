@@ -1110,13 +1110,11 @@ class AILawLearningApp {
         const historySection = document.getElementById('historySection');
         const researchSection = document.getElementById('researchSection');
         const leaderboardSection = document.getElementById('leaderboardSection');
-        const achievementsSection = document.getElementById('achievementsSection');
         
         // Hide all sections first
         if (historySection) historySection.classList.remove('active');
         if (researchSection) researchSection.classList.remove('active');
         if (leaderboardSection) leaderboardSection.classList.remove('active');
-        if (achievementsSection) achievementsSection.classList.remove('active');
         
         // Show the selected section
         if (section === 'history' && historySection) {
@@ -1125,8 +1123,6 @@ class AILawLearningApp {
             researchSection.classList.add('active');
         } else if (section === 'leaderboard' && leaderboardSection) {
             leaderboardSection.classList.add('active');
-        } else if (section === 'achievements' && achievementsSection) {
-            achievementsSection.classList.add('active');
         }
         
         // Load appropriate content
@@ -1135,8 +1131,6 @@ class AILawLearningApp {
             this.renderHistoryTopics();
         } else if (section === 'leaderboard') {
             this.loadLeaderboard();
-        } else if (section === 'achievements') {
-            this.loadAchievements();
         }
         
         this.updateProgress();
@@ -1145,8 +1139,7 @@ class AILawLearningApp {
         document.title = {
           history: "AI & Law Learning - History",
           research: "AI & Law Learning - Research",
-          leaderboard: "AI & Law Learning - Leaderboard",
-          achievements: "AI & Law Learning - Achievements"
+          leaderboard: "AI & Law Learning - Leaderboard"
         }[section] || "AI & Law Learning";
 
         // Update the visible page title and subtitle
@@ -1162,9 +1155,6 @@ class AILawLearningApp {
             } else if (section === 'leaderboard') {
                 pageTitle.textContent = 'Leaderboard';
                 pageSubtitle.textContent = 'See how you rank among learners';
-            } else if (section === 'achievements') {
-                pageTitle.textContent = 'Achievements';
-                pageSubtitle.textContent = 'Track your progress and badges';
             } else {
                 pageTitle.textContent = 'AI & Law Learning';
                 pageSubtitle.textContent = '';
@@ -1184,9 +1174,6 @@ class AILawLearningApp {
                 } else if (section === 'leaderboard') {
                     pageTitle.textContent = 'Leaderboard';
                     pageSubtitle.textContent = 'See how you rank among learners';
-                } else if (section === 'achievements') {
-                    pageTitle.textContent = 'Achievements';
-                    pageSubtitle.textContent = 'Track your progress and badges';
                 } else {
                     pageTitle.textContent = 'AI & Law Learning';
                     pageSubtitle.textContent = '';
@@ -1947,8 +1934,6 @@ class AILawLearningApp {
         if (this.currentQuestion < this.totalQuestions - 1) {
             this.currentQuestion++;
             this.renderHistoryQuestion();
-        } else {
-            this.showHistoryResults();
         }
     }
 
@@ -2220,7 +2205,7 @@ class AILawLearningApp {
                 this.currentUser = data.user;
                 await this.mergeGuestProgressToUser(); // Merge guest progress on login
                 await this.loadUserProgress();
-                await this.loadUserStats(); // Load user stats for leaderboard and achievements
+                await this.loadUserStats(); // Load user stats for leaderboard
                 this.updateAuthButton(); // Update the auth button
                 // Close the auth modal
                 const authModal = document.getElementById('authModal');
@@ -2296,24 +2281,20 @@ class AILawLearningApp {
         // Hide all content sections
         const historySection = document.getElementById('historySection');
         const leaderboardSection = document.getElementById('leaderboardSection');
-        const achievementsSection = document.getElementById('achievementsSection');
         
-        console.log('DEBUG: Found sections - historySection:', historySection, 'leaderboardSection:', leaderboardSection, 'achievementsSection:', achievementsSection);
+        console.log('DEBUG: Found sections - historySection:', historySection, 'leaderboardSection:', leaderboardSection);
         
         if (historySection) historySection.classList.add('hidden');
         if (leaderboardSection) leaderboardSection.classList.add('hidden');
-        if (achievementsSection) achievementsSection.classList.add('hidden');
         
         // Reset navigation tabs
         const historyTab = document.getElementById('historyTab');
         const leaderboardTab = document.getElementById('leaderboardTab');
-        const achievementsTab = document.getElementById('achievementsTab');
         
-        console.log('DEBUG: Found tabs - historyTab:', historyTab, 'leaderboardTab:', leaderboardTab, 'achievementsTab:', achievementsTab);
+        console.log('DEBUG: Found tabs - historyTab:', historyTab, 'leaderboardTab:', leaderboardTab);
         
         if (historyTab) historyTab.classList.remove('active');
         if (leaderboardTab) leaderboardTab.classList.remove('active');
-        if (achievementsTab) achievementsTab.classList.remove('active');
         
         // Show the main topics section and activate its tab
         if (historySection) historySection.classList.remove('hidden');
@@ -2666,8 +2647,6 @@ class AILawLearningApp {
         if (this.currentQuestion < this.totalQuestions - 1) {
             this.currentQuestion++;
             this.renderHistoryQuestion();
-        } else {
-            this.showHistoryResults();
         }
     }
 
@@ -2809,7 +2788,7 @@ class AILawLearningApp {
     }
 
  
-    // Leaderboard and Achievements functionality
+    // Leaderboard functionality
 
     async loadLeaderboard() {
         if (!this.currentUser) {
@@ -2883,101 +2862,6 @@ class AILawLearningApp {
             `;
             leaderboardList.innerHTML += entryHTML;
         });
-    }
-
-    async loadAchievements() {
-        if (!this.currentUser) {
-            this.clearAchievementsDisplay();
-            this.showMessage('Please log in to view achievements.', 'warning');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${this.API_BASE_URL}/achievements`, {
-                credentials: 'include'
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                this.renderAchievements(data.all_achievements, data.earned_achievements, data.user_stats);
-            } else {
-                this.showMessage('Failed to load achievements.', 'error');
-            }
-        } catch (error) {
-            console.error('Error loading achievements:', error);
-            this.showMessage('Failed to load achievements.', 'error');
-        }
-    }
-
-    renderAchievements(allAchievements, earnedAchievements, userStats) {
-        const earnedIds = earnedAchievements.map(a => a.id);
-        const totalPoints = earnedAchievements.reduce((sum, a) => sum + a.points, 0);
-
-        // Update summary stats
-        document.getElementById('earnedAchievements').textContent = earnedAchievements.length;
-        document.getElementById('totalAchievements').textContent = allAchievements.length;
-        document.getElementById('totalPointsEarned').textContent = totalPoints;
-
-        const achievementsGrid = document.getElementById('achievementsGrid');
-        achievementsGrid.innerHTML = '';
-
-        allAchievements.forEach(achievement => {
-            const isEarned = earnedIds.includes(achievement.id);
-            const earnedAchievement = earnedAchievements.find(a => a.id === achievement.id);
-            
-            const progress = this.calculateAchievementProgress(achievement, userStats);
-            const progressPercent = Math.min(progress.current / progress.required * 100, 100);
-
-            const achievementHTML = `
-                <div class="achievement-card ${isEarned ? 'earned' : 'locked'}">
-                    <div class="achievement-header">
-                        <div class="achievement-icon">${achievement.icon}</div>
-                        <div class="achievement-info">
-                            <h3>${achievement.name}</h3>
-                            <div class="points">+${achievement.points} points</div>
-                        </div>
-                    </div>
-                    <div class="achievement-description">${achievement.description}</div>
-                    ${isEarned ? 
-                        `<div class="achievement-date">Earned on ${new Date(earnedAchievement.earned_at).toLocaleDateString()}</div>` :
-                        `<div class="achievement-progress">
-                            <div class="progress-bar-achievement">
-                                <div class="progress-fill-achievement" style="width: ${progressPercent}%"></div>
-                            </div>
-                            <div class="progress-text">
-                                <span>${progress.current} / ${progress.required}</span>
-                                <span>${Math.round(progressPercent)}%</span>
-                            </div>
-                        </div>`
-                    }
-                </div>
-            `;
-            achievementsGrid.innerHTML += achievementHTML;
-        });
-    }
-
-    calculateAchievementProgress(achievement, userStats) {
-        if (!userStats) return { current: 0, required: achievement.requirement_value };
-
-        switch (achievement.requirement_type) {
-            case 'lessons_completed':
-                return {
-                    current: userStats.total_lessons_completed,
-                    required: achievement.requirement_value
-                };
-            case 'streak':
-                return {
-                    current: userStats.current_streak,
-                    required: achievement.requirement_value
-                };
-            case 'perfect_score':
-                return {
-                    current: userStats.total_score > 0 ? 1 : 0,
-                    required: 1
-                };
-            default:
-                return { current: 0, required: achievement.requirement_value };
-        }
     }
 
     async loadUserStats() {
