@@ -93,6 +93,17 @@ async function fetchAndApplyUserProgress() {
         if (window.app.learn && typeof window.app.learn.markCompletedLessons === 'function') {
             window.app.learn.markCompletedLessons(backendProgress);
         }
+        // --- Ensure in-memory progress and UI are updated for user progress ---
+        if (window.app.learn && typeof window.app.learn.restoreGuestProgress === 'function') {
+            window.app.learn.restoreGuestProgress();
+        }
+        if (window.app.learn && typeof window.app.learn.refreshProgress === 'function') {
+            window.app.learn.refreshProgress();
+        }
+        // --- Ensure topics/module UI is re-rendered with correct progress ---
+        if (window.app.learn && typeof window.app.learn.show === 'function') {
+            window.app.learn.show();
+        }
         // Refresh progress bars and points
         updateGlobalProgress();
         updatePointsDisplay();
@@ -427,10 +438,10 @@ function hideAuthScreen() {
     }
 }
 
-// --- LOGIN HANDLER: Merge guest progress, fetch backend, update UI ---
+// --- LOGIN HANDLER: Fetch backend, update UI (NO guest progress transfer) ---
 async function handleLogin(userId) {
-    // 1. Merge guest progress into backend
-    await mergeGuestProgressToBackend(userId);
+    // 1. DO NOT merge guest progress - keep guest and user progress separate
+    // await mergeGuestProgressToBackend(userId); // REMOVED: No guest progress transfer
     hideAuthScreen();
     // 2. Update UI to show logged in user
     const usernameElement = document.getElementById('username');
@@ -449,7 +460,6 @@ async function handleLogin(userId) {
         window.app.learn.refreshProgress();
     }
     // Always update global progress bar after login
-    // if (typeof window.updateGlobalProgressBar === 'function') window.updateGlobalProgressBar(); // This line is removed
     showMessage('Login successful!', 'success');
     updateGlobalProgress();
 }
@@ -464,16 +474,28 @@ function handleLogout() {
             console.log(`Saved progress for user ${currentUser} before logout`);
         }
     }
+    // Reset guest progress and clear all progress from localStorage
     resetGuestProgress();
+    // Clear the LearnComponent's in-memory progress to reset module progress bars
+    if (window.app.learn) {
+        window.app.learn.completedLessonsMap = {};
+        window.app.learn.completedLessons = 0;
+        // Refresh the UI to show reset progress immediately
+        if (typeof window.app.learn.refreshProgress === 'function') {
+            window.app.learn.refreshProgress();
+        }
+        // Re-render the topics/modules UI to immediately show reset progress bars
+        if (typeof window.app.learn.show === 'function') {
+            window.app.learn.show();
+        }
+    }
     const userStatusElement = document.getElementById('userStatus');
     if (usernameElement) usernameElement.textContent = 'Guest';
     if (userStatusElement) userStatusElement.textContent = 'Not signed in';
     // Update button icon and event
     setupAuthButtonListener();
-    if (window.app.learn && typeof window.app.learn.refreshProgress === 'function') window.app.learn.refreshProgress();
     updatePointsDisplay();
     // Always update global progress bar after logout
-    // if (typeof window.updateGlobalProgressBar === 'function') window.updateGlobalProgressBar(); // This line is removed
     console.log('User logged out, progress reset to guest state');
     updateGlobalProgress();
 }
