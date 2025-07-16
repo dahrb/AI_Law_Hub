@@ -911,6 +911,7 @@ export class LearnComponent {
         this.completedLessons = 0; // Track completed lessons in this session
         this.completedLessonsMap = {}; // { topicId: Set(lessonIdx) }
         this.fieldNotesVisible = false; // Track field notes visibility
+        this.currentLessonData = null; // Store shuffled questions/options for current lesson
     }
 
     // Add this method to get the total number of completed lessons
@@ -1046,7 +1047,10 @@ export class LearnComponent {
             lessonSection.classList.remove('hidden');
             lessonSection.classList.add('active');
         }
-        // Render lesson header and question area
+        // Generate and store shuffled lesson data only if not already set
+        if (!this.currentLessonData) {
+            this.currentLessonData = this._generateShuffledLesson();
+        }
         const lesson = this.getLesson();
         if (!lesson || !lesson.questions || lesson.questions.length === 0) {
             lessonSection.innerHTML = `<div class="lesson-error">⚠️ No valid lesson data for this lesson.</div>`;
@@ -1073,8 +1077,8 @@ export class LearnComponent {
         document.getElementById('prevBtn').onclick = () => {
             if (this.currentQuestion > 0) {
                 this.currentQuestion--;
-        this.renderQuestion();
-    }
+                this.renderQuestion();
+            }
         };
         document.getElementById('nextBtn').onclick = () => {
             if (this.currentQuestion < lesson.questions.length - 1) {
@@ -1257,9 +1261,11 @@ export class LearnComponent {
         document.getElementById('retryBtn').onclick = () => {
             this.userAnswers = [];
             this.currentQuestion = 0;
-                    this.showLesson();
-                };
+            this.currentLessonData = null; // Reset so new shuffle occurs
+            this.showLesson();
+        };
         document.getElementById('backToTopicsBtn').onclick = () => {
+            this.currentLessonData = null; // Reset when going back to topics
             this.show();
         };
         if (!isLastLesson) {
@@ -1268,6 +1274,7 @@ export class LearnComponent {
                 this.currentQuestion = 0;
                 this.userAnswers = [];
                 this.fieldNotesVisible = false; // Reset field notes visibility for next lesson
+                this.currentLessonData = null; // Reset so new shuffle occurs
                 this.showLesson();
                 // Update progress bar after lesson change
                 if (window.updateGlobalProgress) window.updateGlobalProgress();
@@ -1306,8 +1313,22 @@ export class LearnComponent {
         if (window.updateGlobalProgress) window.updateGlobalProgress();
     }
 
+    // Fisher-Yates shuffle helper
+    shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
     // Helper: get lesson data for current topic/lesson
     getLesson() {
+        return this.currentLessonData;
+    }
+
+    // Internal: generate and shuffle lesson data
+    _generateShuffledLesson() {
         const topic = this.currentTopic;
         const lessonIndex = this.currentLesson;
         if (!topic) return null;
@@ -1326,9 +1347,11 @@ export class LearnComponent {
             }
         }
         if (!lessonTemplate || lessonTemplate.length === 0) return null;
-        const questions = lessonTemplate.map(q => {
-            const shuffledOptions = [...q.answers];
-            // Optionally shuffle here if desired
+        // Shuffle questions for this lesson
+        const shuffledQuestions = this.shuffleArray([...lessonTemplate]);
+        const questions = shuffledQuestions.map(q => {
+            // Shuffle options and find new correct index
+            const shuffledOptions = this.shuffleArray([...q.answers]);
             const correctIndex = shuffledOptions.findIndex(opt => opt.correct);
             return {
                 question: q.template,
