@@ -12,6 +12,7 @@ import time
 from bs4 import BeautifulSoup
 import re
 import latexcodec  # Add this import for LaTeX decoding
+from random import sample, shuffle, choice
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 app.secret_key = 'ai_law_learning_secret_key_2024'
@@ -1109,6 +1110,94 @@ def api_research_years():
     return jsonify({'years': year_list})
 
 # Remove the /api/fetch-papers endpoint to ensure fetching is manual only
+
+@app.route('/api/timeline-milestones', methods=['GET'])
+def get_timeline_milestones():
+    """Return a random set of AI & Law research milestones for the timeline game."""
+    milestones = [
+        {"title": "MYCIN: Early AI legal expert system", "year": 1977, "fact": "One of the first expert systems, inspiring later legal AI."},
+        {"title": "First International Conference on AI & Law (ICAIL)", "year": 1987, "fact": "ICAIL became the flagship conference for the field."},
+        {"title": "CATO: Factor-based legal reasoning system", "year": 1995, "fact": "CATO introduced factor-based reasoning for legal cases."},
+        {"title": "First neural network used for legal prediction", "year": 2016, "fact": "Neural nets began outperforming traditional models in legal tasks."},
+        {"title": "GPT-3 released and applied to legal text analysis", "year": 2020, "fact": "Large language models started being used for legal research and drafting."},
+        {"title": "First AI system cited in a court decision", "year": 2019, "fact": "A milestone for AI's influence in real-world legal practice."},
+        {"title": 'Ashley’s "Introduction to AI & Law" textbook published', "year": 2017, "fact": "A comprehensive resource for the field."},
+        {"title": "First use of argument mining in legal texts", "year": 2014, "fact": "Argument mining became a hot topic in legal NLP."}
+    ]
+    # Pick 5 random milestones and shuffle their order
+    chosen = sample(milestones, 5)
+    shuffle(chosen)
+    return jsonify({"milestones": chosen})
+
+@app.route('/api/citation-race-question', methods=['GET'])
+def get_citation_race_question():
+    """Return a random ECtHR scenario/question and citation options for the Citation Race game."""
+    questions = [
+        {
+            "scenario": "A journalist claims their conviction for publishing state secrets violates their right to freedom of expression. Which ECtHR case is most relevant?",
+            "citations": [
+                "Handyside v. United Kingdom (1976)",
+                "Dudgeon v. United Kingdom (1981)",
+                "Ocalan v. Turkey (2005)",
+                "Soering v. United Kingdom (1989)"
+            ],
+            "correct": "Handyside v. United Kingdom (1976)",
+            "fact": "Handyside v. UK is a leading ECtHR case on freedom of expression under Article 10." 
+        },
+        {
+            "scenario": "A same-sex couple challenges a country's refusal to recognize their relationship. Which ECtHR case is most relevant?",
+            "citations": [
+                "Schalk and Kopf v. Austria (2010)",
+                "Klass v. Germany (1978)",
+                "Sunday Times v. United Kingdom (1979)",
+                "McCann v. United Kingdom (1995)"
+            ],
+            "correct": "Schalk and Kopf v. Austria (2010)",
+            "fact": "Schalk and Kopf v. Austria was the first ECtHR case to address same-sex relationships under Article 8." 
+        },
+        {
+            "scenario": "A prisoner claims that poor prison conditions amount to inhuman or degrading treatment. Which ECtHR case is most relevant?",
+            "citations": [
+                "Kudła v. Poland (2000)",
+                "Goodwin v. United Kingdom (2002)",
+                "S.A.S. v. France (2014)",
+                "Hirst v. United Kingdom (2005)"
+            ],
+            "correct": "Kudła v. Poland (2000)",
+            "fact": "Kudła v. Poland is a key case on Article 3 and prison conditions." 
+        },
+        {
+            "scenario": "A person is extradited to a country where they risk torture. Which ECtHR case is most relevant?",
+            "citations": [
+                "Soering v. United Kingdom (1989)",
+                "Dudgeon v. United Kingdom (1981)",
+                "Ocalan v. Turkey (2005)",
+                "Schalk and Kopf v. Austria (2010)"
+            ],
+            "correct": "Soering v. United Kingdom (1989)",
+            "fact": "Soering v. UK established that extradition can violate Article 3 if there is a real risk of torture or inhuman treatment." 
+        },
+        {
+            "scenario": "A government intercepts citizens' communications for national security. Which ECtHR case is most relevant?",
+            "citations": [
+                "Klass v. Germany (1978)",
+                "Handyside v. United Kingdom (1976)",
+                "Kudła v. Poland (2000)",
+                "Goodwin v. United Kingdom (2002)"
+            ],
+            "correct": "Klass v. Germany (1978)",
+            "fact": "Klass v. Germany is a leading case on surveillance and the right to privacy under Article 8." 
+        }
+    ]
+    q = choice(questions)
+    options = q["citations"][:]
+    shuffle(options)
+    return jsonify({
+        "scenario": q["scenario"],
+        "citations": options,
+        "correct": q["correct"],
+        "fact": q["fact"]
+    })
 
 def decode_latex_chars(text):
     """Convert LaTeX-style character escaping to Unicode characters."""

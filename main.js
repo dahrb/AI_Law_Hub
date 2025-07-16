@@ -4,6 +4,7 @@ import { LearnComponent } from './components/learn.js';
 import { ResearchComponent } from './components/research.js';
 import { LeaderboardComponent } from './components/leaderboard.js';
 import { AchievementsComponent } from './components/achievements.js';
+import { AcademicAdventureComponent } from './components/timeline.js';
 
 const API_BASE_URL = 'http://localhost:5004/api';
 const appState = {};
@@ -13,10 +14,12 @@ const learn = new LearnComponent(appState);
 const research = new ResearchComponent(API_BASE_URL);
 const leaderboard = new LeaderboardComponent(API_BASE_URL);
 const achievements = new AchievementsComponent(API_BASE_URL);
+const timeline = new AcademicAdventureComponent();
 
 const sectionMap = {
     history: learn,
     research: research,
+    timeline: timeline,
     leaderboard: leaderboard,
     achievements: achievements
 };
