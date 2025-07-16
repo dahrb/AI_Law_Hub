@@ -2771,3 +2771,97 @@ body {
         flex-wrap: wrap;
     }
 }
+
+.completed-module {
+    position: relative;
+    box-shadow: 0 0 24px 4px rgba(102, 126, 234, 0.18), 0 2px 16px 0 rgba(34,197,94,0.10);
+    border: 2px solid #22c55e;
+    background: linear-gradient(120deg, #f0fff4 60%, #e0e7ff 100%);
+    animation: moduleCompletePulse 1.2s cubic-bezier(.4,0,.2,1);
+    transition: box-shadow 0.3s, border 0.3s;
+    overflow: visible;
+}
+
+@keyframes moduleCompletePulse {
+    0% { box-shadow: 0 0 0 0 #22c55e44; }
+    60% { box-shadow: 0 0 32px 12px #22c55e44; }
+    100% { box-shadow: 0 0 24px 4px #22c55e44; }
+}
+
+.completed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    background: linear-gradient(90deg, #22c55e 60%, #667eea 100%);
+    color: #fff;
+    font-weight: 600;
+    border-radius: 16px;
+    padding: 0.25em 1em;
+    font-size: 1rem;
+    box-shadow: 0 2px 8px rgba(34,197,94,0.10);
+    letter-spacing: 0.01em;
+    margin-left: 0.5em;
+    animation: badgePop 0.7s cubic-bezier(.4,0,.2,1);
+}
+
+@keyframes badgePop {
+    0% { transform: scale(0.7); opacity: 0; }
+    60% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); }
+}
+
+.celebrate-icon {
+    font-size: 1.3em;
+    filter: drop-shadow(0 2px 4px #22c55e44);
+    animation: confettiPop 1.2s cubic-bezier(.4,0,.2,1);
+}
+
+@keyframes confettiPop {
+    0% { transform: scale(0.5) rotate(-30deg); opacity: 0; }
+    60% { transform: scale(1.2) rotate(10deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+.confetti {
+    pointer-events: none;
+    position: absolute;
+    top: -10px; left: 0; right: 0; height: 0; width: 100%;
+    z-index: 2;
+}
+
+.confetti::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 0;
+    pointer-events: none;
+    background: url('data:image/svg+xml;utf8,<svg width="120" height="24" xmlns="http://www.w3.org/2000/svg"><g><circle cx="10" cy="12" r="4" fill="%23fbbf24"/><circle cx="40" cy="8" r="3" fill="%23667eea"/><circle cx="70" cy="16" r="4" fill="%2322c55e"/><circle cx="100" cy="10" r="3" fill="%23e91e63"/></g></svg>') repeat-x;
+    background-size: 60px 24px;
+    animation: confettiRain 1.2s cubic-bezier(.4,0,.2,1);
+}
+
+@keyframes confettiRain {
+    0% { opacity: 0; transform: translateY(-24px); }
+    20% { opacity: 1; }
+    100% { opacity: 0.7; transform: translateY(24px); }
+}
+
+.retry-module-btn {
+    background: linear-gradient(90deg, #667eea 60%, #22c55e 100%);
+    color: #fff;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    padding: 0.5em 1.5em;
+    font-size: 1rem;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.10);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    cursor: pointer;
+    margin-top: 0.5em;
+}
+
+.retry-module-btn:hover {
+    background: linear-gradient(90deg, #22c55e 60%, #667eea 100%);
+    box-shadow: 0 4px 16px rgba(34,197,94,0.15);
+    transform: translateY(-2px) scale(1.04);
+}

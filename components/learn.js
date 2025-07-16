@@ -962,6 +962,7 @@ export class LearnComponent {
             const totalLessons = topic.lessonCount;
             const completedCount = completedSet.size;
             const modulePercent = Math.round((completedCount / totalLessons) * 100);
+            const isCompleted = completedCount === totalLessons;
             // Next lesson difficulty (minimalist)
             let nextLessonIdx = 0;
             for (let i = 0; i < totalLessons; i++) {
@@ -977,7 +978,7 @@ export class LearnComponent {
             if (nextLessonIdx === 1) { difficulty = 'Intermediate'; diffColor = '#FF9800'; }
             if (nextLessonIdx === 2) { difficulty = 'Expert'; diffColor = '#F44336'; }
             const card = document.createElement('div');
-            card.className = 'topic-card';
+            card.className = 'topic-card' + (isCompleted ? ' completed-module' : '');
             card.innerHTML = `
                 <div class="topic-header">
                     <div class="topic-icon" style="background: ${topic.color}">${topic.icon}</div>
@@ -992,15 +993,39 @@ export class LearnComponent {
                         </div>
                     <div class="module-progress-stats">${completedCount} / ${totalLessons}</div>
                     </div>
-                <div class="difficulty-minimalist"><span class="difficulty-dot" style="background:${diffColor}"></span><span class="difficulty-text">${difficulty}</span></div>
-                <div class="topic-stats">
-                    <button class="btn primary start-learning-btn" data-topic-id="${topic.id}">Start<br>Learning</button>
+                <div class="difficulty-minimalist">
+                    ${isCompleted
+                        ? `<span class="completed-badge"><span class="celebrate-icon">🎉</span> Completed</span>`
+                        : `<span class="difficulty-dot" style="background:${diffColor}"></span><span class="difficulty-text">${difficulty}</span>`}
                 </div>
+                <div class="topic-stats">
+                    ${isCompleted
+                        ? `<button class="btn retry-module-btn" data-topic-id="${topic.id}"><i class="fas fa-redo"></i> Retry</button>`
+                        : `<button class="btn primary start-learning-btn" data-topic-id="${topic.id}">Start<br>Learning</button>`}
+                </div>
+                ${isCompleted ? `<div class="confetti"></div>` : ''}
             `;
             topicsGrid.appendChild(card);
         });
-        // Attach a single event listener for all Start Learning buttons
+        // Attach a single event listener for all Start Learning and Retry buttons
         topicsGrid.onclick = (e) => {
+            const retryBtn = e.target.closest('.retry-module-btn');
+            if (retryBtn) {
+                const topicId = retryBtn.getAttribute('data-topic-id');
+                // Reset progress for this module
+                this.completedLessonsMap[topicId] = new Set();
+                // Save to localStorage for guest persistence
+                const progress = {};
+                for (const t in this.completedLessonsMap) {
+                    progress[t] = Array.from(this.completedLessonsMap[t]);
+                }
+                localStorage.setItem('learnProgress', JSON.stringify(progress));
+                this.completedLessons = this.getCompletedLessonsCount();
+                if (window.updateGlobalProgress) window.updateGlobalProgress();
+                this.renderTopics();
+                // Optionally, add a little animation or effect here
+                return;
+            }
             const btn = e.target.closest('.start-learning-btn');
             if (btn) {
                 const topicId = btn.getAttribute('data-topic-id');
@@ -1234,7 +1259,7 @@ export class LearnComponent {
             <button class="action-btn secondary" id="retryBtn"><i class="fas fa-redo"></i><span>Retry</span></button>
             <button class="action-btn primary" id="backToTopicsBtn"><i class="fas fa-home"></i><span>Topics</span></button>
         `;
-        if (!isLastLesson) {
+        if (!isLastLesson && percentage >= 80) {
             actionsHtml = `
                 <button class="action-btn secondary" id="retryBtn"><i class="fas fa-redo"></i><span>Retry</span></button>
                 <button class="action-btn" id="nextLessonBtn"><i class="fas fa-arrow-right"></i><span>Next Lesson</span></button>
@@ -1268,7 +1293,7 @@ export class LearnComponent {
             this.currentLessonData = null; // Reset when going back to topics
             this.show();
         };
-        if (!isLastLesson) {
+        if (!isLastLesson && percentage >= 80) {
             document.getElementById('nextLessonBtn').onclick = () => {
                 this.currentLesson++;
                 this.currentQuestion = 0;
@@ -1280,19 +1305,33 @@ export class LearnComponent {
                 if (window.updateGlobalProgress) window.updateGlobalProgress();
             };
         }
-        // Mark lesson as completed for guest/session (use finishedLessonIdx)
+        // Mark lesson as completed for guest/session (use finishedLessonIdx) ONLY if passed
         if (this.currentTopic && typeof finishedLessonIdx === 'number') {
             const topicId = this.currentTopic.id;
             if (!this.completedLessonsMap[topicId]) {
                 this.completedLessonsMap[topicId] = new Set();
             }
-            this.completedLessonsMap[topicId].add(finishedLessonIdx);
+            if (percentage >= 80) {
+                this.completedLessonsMap[topicId].add(finishedLessonIdx);
+            } else {
+                // Remove from completed if it was previously marked (e.g., on retry)
+                this.completedLessonsMap[topicId].delete(finishedLessonIdx);
+            }
             // Save to localStorage for guest persistence (optional)
             const progress = {};
             for (const t in this.completedLessonsMap) {
                 progress[t] = Array.from(this.completedLessonsMap[t]);
             }
             localStorage.setItem('learnProgress', JSON.stringify(progress));
+            // Also store score/total_questions for robust backend sync
+            let lessonScores = {};
+            try { lessonScores = JSON.parse(localStorage.getItem('lessonScores') || '{}'); } catch (e) {}
+            if (!lessonScores[topicId]) lessonScores[topicId] = {};
+            lessonScores[finishedLessonIdx] = { score: correct, total_questions: total };
+            localStorage.setItem('lessonScores', JSON.stringify(lessonScores));
+            // Also save to backend if logged in
+            console.log('Calling saveUserProgressToBackend after progress update', progress);
+            this.saveUserProgressToBackend(progress);
         }
         // Update completedLessons for progress bar
         this.completedLessons = this.getCompletedLessonsCount();
@@ -1363,5 +1402,146 @@ export class LearnComponent {
             title: `${topic.title} - Lesson ${lessonIndex + 1}`,
             questions
         };
+    }
+
+    // Helper: check if user is logged in
+    isLoggedIn() {
+        // You may want to improve this check based on your auth system
+        const username = this.getCurrentUser();
+        return username && username !== 'Guest';
+    }
+
+    // Helper: get current username (assumes #username element or similar)
+    getCurrentUser() {
+        const usernameElement = document.getElementById('username');
+        return usernameElement ? usernameElement.textContent : null;
+    }
+
+    // Save user progress to backend if logged in (one request per lesson)
+    async saveUserProgressToBackend(progress) {
+        if (!this.isLoggedIn()) return;
+        try {
+            // For each topic and lesson, send a POST to /api/progress
+            for (const topic in progress) {
+                for (const lessonIdx of progress[topic]) {
+                    // Try to get score/total_questions from localStorage or in-memory (if available)
+                    let score = 0;
+                    let total_questions = 0;
+                    // Try to get from localStorage (if previously saved)
+                    try {
+                        const scores = JSON.parse(localStorage.getItem('lessonScores') || '{}');
+                        if (scores[topic] && scores[topic][lessonIdx]) {
+                            score = scores[topic][lessonIdx].score || 0;
+                            total_questions = scores[topic][lessonIdx].total_questions || 0;
+                        }
+                    } catch (e) {}
+                    // Fallback: if this.userAnswers exists for this lesson, count correct answers
+                    // (This is a best effort; ideally, you should store scores at completion time)
+                    const payload = {
+                        topic,
+                        lesson: lessonIdx.toString(),
+                        completed: true,
+                        score,
+                        total_questions
+                    };
+                    try {
+                        const resp = await fetch('/api/progress', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify(payload)
+                        });
+                        if (resp.ok) {
+                            console.log('Saved progress for user', this.getCurrentUser(), payload);
+                        } else {
+                            const errText = await resp.text();
+                            console.error('Failed to save progress for user', this.getCurrentUser(), payload, errText);
+                            this.showMessage('Failed to save your progress to the server. Please check your connection.', 'error');
+                        }
+                    } catch (err) {
+                        console.error('Error during progress save fetch', err, payload);
+                        this.showMessage('Failed to save your progress to the server. Please check your connection.', 'error');
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Failed to save user progress to backend', e);
+            this.showMessage('Failed to save your progress to the server. Please check your connection.', 'error');
+        }
+    }
+
+    // Load user progress from backend and update state
+    async loadUserProgressFromBackend() {
+        if (!this.isLoggedIn()) return;
+        try {
+            const resp = await fetch('/api/progress', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data.progress && Array.isArray(data.progress)) {
+                    // Reconstruct progress map: { topic: [lessonIdx, ...] }
+                    const progressMap = {};
+                    for (const rec of data.progress) {
+                        if (rec.completed) {
+                            if (!progressMap[rec.topic]) progressMap[rec.topic] = [];
+                            // Store as integer if possible
+                            const lessonNum = isNaN(rec.lesson) ? rec.lesson : parseInt(rec.lesson, 10);
+                            if (!progressMap[rec.topic].includes(lessonNum)) {
+                                progressMap[rec.topic].push(lessonNum);
+                            }
+                        }
+                    }
+                    // Update in-memory and localStorage
+                    for (const topicId in progressMap) {
+                        this.completedLessonsMap[topicId] = new Set(progressMap[topicId]);
+                    }
+                    localStorage.setItem('learnProgress', JSON.stringify(progressMap));
+                    this.completedLessons = this.getCompletedLessonsCount();
+                    if (window.updateGlobalProgress) window.updateGlobalProgress();
+                    console.log('Loaded progress from backend for user', this.getCurrentUser(), progressMap);
+                }
+            } else {
+                const errText = await resp.text();
+                console.error('Failed to load progress from backend', errText);
+                this.showMessage('Failed to load your progress from the server.', 'error');
+            }
+        } catch (e) {
+            console.error('Failed to load user progress from backend', e);
+            this.showMessage('Failed to load your progress from the server.', 'error');
+        }
+    }
+
+    // Show a user-facing notification (simple, top-right corner)
+    showMessage(message, type = 'info') {
+        // Remove any existing notification
+        const existing = document.querySelector('.notification');
+        if (existing) existing.remove();
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            z-index: 10000;
+            font-size: 1.1rem;
+            background: ${type === 'error' ? '#ef4444' : '#10b981'};
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            notification.remove();
+        }, 3500);
+    }
+
+    // Public: call this after login to sync backend progress
+    async syncUserProgressOnLogin() {
+        await this.loadUserProgressFromBackend();
+        this.renderTopics();
     }
 } // Only one closing brace for the class
